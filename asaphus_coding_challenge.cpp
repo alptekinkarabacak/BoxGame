@@ -36,6 +36,7 @@
  */
 
 #include <algorithm>
+#include <memory>
 #include <cstdint>
 #include <iostream>
 #include <limits>
@@ -48,10 +49,12 @@
 #include "catch.hpp"
 
 class Box {
- public:
+public:
   explicit Box(double initial_weight) : weight_(initial_weight) {}
-  static std::unique_ptr<Box> makeGreenBox(double initial_weight);
-  static std::unique_ptr<Box> makeBlueBox(double initial_weight);
+  virtual ~Box() = default;
+    static std::unique_ptr<Box> makeGreenBox(double initial_weight);
+
+    static std::unique_ptr<Box> makeBlueBox(double initial_weight);
   bool operator<(const Box& rhs) const { return weight_ < rhs.weight_; }
 
   virtual double absorbWeight(double tokenWeight) = 0;
@@ -121,13 +124,22 @@ class Player {
   double score_{0.0};
 };
 
+std::unique_ptr<Box> Box::makeGreenBox(double initial_weight) {
+    return std::make_unique<GreenBox>(initial_weight);
+}
+
+std::unique_ptr<Box> Box::makeBlueBox(double initial_weight) {
+    return std::make_unique<BlueBox>(initial_weight);
+}
+
 std::pair<double, double> play(const std::vector<uint32_t>& input_weights) {
   std::vector<std::unique_ptr<Box> > boxes;
   boxes.emplace_back(Box::makeGreenBox(0.0));
   boxes.emplace_back(Box::makeGreenBox(0.1));
   boxes.emplace_back(Box::makeBlueBox(0.2));
   boxes.emplace_back(Box::makeBlueBox(0.3));
-
+  Player player_A;
+  Player player_B;
   // TODO
 
   std::cout << "Scores: player A " << player_A.getScore() << ", player B "
